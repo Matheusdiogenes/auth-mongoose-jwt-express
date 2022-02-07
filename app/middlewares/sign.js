@@ -34,17 +34,20 @@ const login = async (req, res) => {
     const {email, password} = req.body
 
     const user = await User.findOne({email: email}).select("+password")
+    
+    if (!user) {
+        return res.status(404).send({message: "Invalid email or password."})
+    }
 
     const match = await bcrypt.compare(password.toString(), user.password)
     
     if (!match) {
-        return res.status(401).send({message: "Invalid email or password."})
+        return res.status(404).send({message: "Invalid email or password."})
     }
+    
     user.password = undefined
     return res.status(200).send({ user: user, token: generateToken( {id: user.id} )})
 }
-
-
 
 module.exports = {
     register,
